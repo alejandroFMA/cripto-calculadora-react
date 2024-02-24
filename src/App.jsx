@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import ImagenCrypto from "./img/imagen-criptos.png"
 import Formulario from './components/Formulario'
 import Resultado from './components/Resultado'
+import Spinner from './components/Spinner'
+import './styles/spinner.css'
 
 
 const Contenedor = styled.div`
@@ -47,11 +49,16 @@ function App() {
 
   const [monedas, setMonedas] = useState({})
   const [resultados, setResultados] =useState({})
+  const [cargando, setCargando] = useState(false)
 
 
   useEffect(() => {
     const fetchData = async () => {
+
+      if (Object.keys(monedas).length > 0) {
       try {
+        setCargando(true)
+        setResultados({})
        const  {criptomoneda, moneda} = monedas
         const respuesta = await axios.get(
           `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptomoneda}&tsyms=${moneda}`
@@ -59,11 +66,13 @@ function App() {
         const datos = respuesta.data;
   
       setResultados(datos.DISPLAY[criptomoneda][moneda])
+      setCargando(false)
       
       } catch (error) {
         console.error("Error fetching data: ", error.message);
       }
     };
+  }
   
     fetchData();
   }, [monedas]);
@@ -79,6 +88,7 @@ function App() {
         <Heading>Calculadora de criptomonedas</Heading>
         <Formulario
         setMonedas={setMonedas}/>
+        {cargando && <Spinner/>}
         {resultados.PRICE && <Resultado
         resultados={resultados}         
         />}
